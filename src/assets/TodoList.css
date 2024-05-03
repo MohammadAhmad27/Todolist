@@ -35,7 +35,7 @@
 
 .todo-item {
     display: flex;
-    align-items: start;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
 }
