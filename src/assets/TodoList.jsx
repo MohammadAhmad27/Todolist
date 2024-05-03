@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function TodoList() {
-    const [todos, setTodos] = useState([
+    const [todo, setTodo] = useState([
         { task: "Task 1", id: uuidv4() },
         { task: "Task 2", id: uuidv4() },
         { task: "Task 3", id: uuidv4() }
@@ -12,23 +12,31 @@ export default function TodoList() {
     const [todoInput, setTodoInput] = useState("");
     const [editingTodo, setEditingTodo] = useState({ id: null, task: "" });
 
-    const addTodo = () => {
+    const handleChange = (e) => {
+        setTodoInput(e.target.value);
+    }
 
-        setTodos(prevTodos => [...prevTodos, { task: todoInput.trim(), id: uuidv4() }]);
+    const addTodo = () => {
+        setTodo((prevTodo) =>
+            [...prevTodo, { task: todoInput, id: uuidv4() }]
+        );
         setTodoInput("");
     };
 
-    const deleteTodo = id => setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+    const deleteTodo = (id) => {
+        setTodo((prevTodo) =>
+            prevTodo.filter((todo) => todo.id !== id)
+        );
+    };
 
     const startEditing = (id, task) => {
         setEditingTodo({ id, task });
     };
 
     const saveEditedTodo = () => {
-        setTodos(prevTodos =>
-            prevTodos.map(todo =>
-                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task.trim() } : todo
-            )
+        setTodo((prevTodo) =>
+            prevTodo.map(todo =>
+                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task.trim() } : todo)
         );
         setEditingTodo({ id: null, task: "" });
     };
@@ -39,32 +47,32 @@ export default function TodoList() {
                 type="text"
                 placeholder="Add a task"
                 value={todoInput}
-                onChange={e => setTodoInput(e.target.value)}
+                onChange={handleChange}
             />
             <button onClick={addTodo}>Add</button>
 
-
-
             <h4>Tasks Todo</h4>
             <ul>
-                {todos.map(todo => (
+                {todo.map(todo => (
                     <li key={todo.id}>
-                        {editingTodo.id === todo.id ? (
+                        {editingTodo.id === todo.id ?
                             <>
                                 <input
                                     type="text"
                                     value={editingTodo.task}
-                                    onChange={e => setEditingTodo({ ...editingTodo, task: e.target.value })}
+                                    onChange={(e) => {
+                                        setEditingTodo({ ...editingTodo, task: e.target.value })
+                                    }}
                                 />
                                 <button onClick={saveEditedTodo}>Save</button>
                             </>
-                        ) : (
+                            :
                             <>
                                 <span>{todo.task}</span>
-                                <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-                                <button onClick={() => startEditing(todo.id, todo.task)}>Edit</button>
+                                <button onClick={() => { deleteTodo(todo.id) }}>Delete</button>
+                                <button onClick={() => { startEditing(todo.id, todo.task) }}>Edit</button>
                             </>
-                        )}
+                        }
                     </li>
                 ))}
             </ul>
