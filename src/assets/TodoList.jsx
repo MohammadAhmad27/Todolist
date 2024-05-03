@@ -1,26 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import './TodoList.css';
 
 export default function TodoList() {
-    const [todo, setTodo] = useState([
-        { task: "Task 1", id: uuidv4() },
-        { task: "Task 2", id: uuidv4() },
-        { task: "Task 3", id: uuidv4() }
-    ]);
-
+    const [todo, setTodo] = useState(() => {
+        const savedTodo = localStorage.getItem('todo');
+        return savedTodo ? JSON.parse(savedTodo) : [];
+    });
 
     const [todoInput, setTodoInput] = useState("");
     const [editingTodo, setEditingTodo] = useState({ id: null, task: "" });
+
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        inputRef.current.focus();
+    }, [todoInput]);
+
+    useEffect(() => {
+        localStorage.setItem('todo', JSON.stringify(todo));
+    }, [todo]);
 
     const handleChange = (e) => {
         setTodoInput(e.target.value);
     }
 
-    const addTodo = () => {
-        setTodo((prevTodo) =>
-            [...prevTodo, { task: todoInput, id: uuidv4() }]
-        );
-        setTodoInput("");
+    const addTodo = (e) => {
+        e.preventDefault();
+        if (todoInput !== "") {
+            setTodo((prevTodo) =>
+                [...prevTodo, { task: todoInput, id: uuidv4(), completed: false }]
+            );
+            setTodoInput("");
+        }
     };
 
     const deleteTodo = (id) => {
@@ -36,46 +48,118 @@ export default function TodoList() {
     const saveEditedTodo = () => {
         setTodo((prevTodo) =>
             prevTodo.map(todo =>
-                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task } : todo)
+                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task } : todo
+            )
         );
         setEditingTodo({ id: null, task: "" });
     };
 
+    const toggleComplete = (id) => {
+        setTodo((prevTodo) =>
+            prevTodo.map(todo =>
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            )
+        );
+    };
+
     return (
         <div>
-            <input
-                type="text"
-                placeholder="Add a task"
-                value={todoInput}
-                onChange={handleChange}
-            />
-            <button onClick={addTodo}>Add</button>
+            <h4 className='heading'>Tasks Todo</h4>
+            <div className="sticky-header">
+                <form onSubmit={addTodo}>
+                    <div className='form'>
+                    <input
+                        ref={inputRef}
+                        className="input"
+                        type="text"
+                        placeholder="Add a task"
+                        value={todoInput}
+                        onChange={handleChange}
+                    />
+                    <button>Add</button>
+                    </div>
+                </form>
+            </div>
 
-            <h4>Tasks Todo</h4>
-            <ul>
-                {todo.map(todo => (
-                    <li key={todo.id}>
-                        {editingTodo.id === todo.id ?
-                            <>
-                                <input
-                                    type="text"
-                                    value={editingTodo.task}
-                                    onChange={(e) => {
-                                        setEditingTodo({ ...editingTodo, task: e.target.value })
-                                    }}
-                                />
-                                <button onClick={saveEditedTodo}>Save</button>
-                            </>
-                            :
-                            <>
-                                <span>{todo.task}</span>
-                                <button onClick={() => { deleteTodo(todo.id) }}>Delete</button>
-                                <button onClick={() => { startEditing(todo.id, todo.task) }}>Edit</button>
-                            </>
-                        }
-                    </li>
-                ))}
-            </ul>
+            {todo.length > 0 && (
+                <div>
+                    <h5>Completed Tasks</h5>
+                    <ul className="todo-list">
+                        {todo.map(todoItem => (
+                            todoItem.completed &&
+                            <div key={todoItem.id} className='completed'>
+                                <div className="todo-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={true}
+                                        onChange={() => toggleComplete(todoItem.id)}
+                                    />
+                                    {editingTodo.id === todoItem.id ? (
+                                        <>
+                                            <input
+                                                type="text"
+                                                value={editingTodo.task}
+                                                onChange={(e) => {
+                                                    setEditingTodo({ ...editingTodo, task: e.target.value })
+                                                }}
+                                            />
+                                            <button className="save-button" onClick={saveEditedTodo}>Save</button>
+                                        </>
+                                    ) : (
+                                        <span>{todoItem.task}</span>
+                                    )}
+                                    {editingTodo.id !== todoItem.id && (
+                                        <div className="button-container">
+                                            <button onClick={() => { deleteTodo(todoItem.id) }}><i className="far fa-trash-alt"></i></button>
+                                            <button onClick={() => { startEditing(todoItem.id, todoItem.task) }}><i className="far fa-edit"></i></button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {todo.length > 0 && (
+                <div>
+                    <h5>Pending Tasks</h5>
+                    <ul className="todo-list">
+                        {todo.map(todoItem => (
+                            !todoItem.completed &&
+                            <div key={todoItem.id}>
+                                <div className="todo-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={false}
+                                        onChange={() => toggleComplete(todoItem.id)}
+                                    />
+                                    {editingTodo.id === todoItem.id ? (
+                                        <>
+                                            <input
+                                                type="text"
+                                                value={editingTodo.task}
+                                                onChange={(e) => {
+                                                    setEditingTodo({ ...editingTodo, task: e.target.value })
+                                                }}
+                                            />
+                                            <button className="save-button" onClick={saveEditedTodo}>Save</button>
+                                        </>
+                                    ) : (
+                                        <span>{todoItem.task}</span>
+                                    )}
+                                    {editingTodo.id !== todoItem.id && (
+                                        <div className="button-container">
+                                            <button onClick={() => { deleteTodo(todoItem.id) }}><i className="far fa-trash-alt"></i></button>
+                                            <button onClick={() => { startEditing(todoItem.id, todoItem.task) }}><i className="far fa-edit"></i></button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }
