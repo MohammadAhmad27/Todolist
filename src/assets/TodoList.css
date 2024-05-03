@@ -3,7 +3,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    background-color: lightgray;
+    background-color: olive;
     padding: 10px;
     z-index: 1000;
     /* ensure it's above other content */
