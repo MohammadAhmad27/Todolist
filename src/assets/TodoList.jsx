@@ -36,7 +36,7 @@ export default function TodoList() {
     const saveEditedTodo = () => {
         setTodo((prevTodo) =>
             prevTodo.map(todo =>
-                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task.trim() } : todo)
+                todo.id === editingTodo.id ? { ...todo, task: editingTodo.task } : todo)
         );
         setEditingTodo({ id: null, task: "" });
     };
