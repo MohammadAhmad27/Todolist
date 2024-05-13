@@ -1,14 +1,12 @@
-import { useState } from 'react'
-import './App.css'
-import TodoList from './assets/TodoList'
+import "./App.css";
+import TodoList from "./assets/TodoList";
 
 function App() {
-
   return (
     <>
-     <TodoList/>
+      <TodoList />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
